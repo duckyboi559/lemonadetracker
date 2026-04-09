@@ -1,129 +1,161 @@
+const tapSound = new Audio("sounds/tap.mp3");
+tapSound.preload = "auto";
+
+function playTapSound() {
+  tapSound.currentTime = 0;
+  tapSound.play().catch(() => {});
+}
+
 let data = {
-    bacon: {
-        count: Number(localStorage.getItem("baconCount")) || 0,
-        price: Number(localStorage.getItem("baconPrice")) || 5
-    },
-    quack: {
-        count: Number(localStorage.getItem("quackCount")) || 0,
-        price: Number(localStorage.getItem("quackPrice")) || 6
-    },
-    fries: {
-        count: Number(localStorage.getItem("friesCount")) || 0,
-        price: Number(localStorage.getItem("friesPrice")) || 10
-    }
+  classic: { count: Number(localStorage.getItem("classicCount")) || 0, price: 6 },
+  flavor: { count: Number(localStorage.getItem("flavorCount")) || 0, price: 7 },
+  speciality: { count: Number(localStorage.getItem("specialityCount")) || 0, price: 8 },
+  redbull: { count: Number(localStorage.getItem("redbullCount")) || 0, price: 9 },
+  classic64: { count: Number(localStorage.getItem("classic64Count")) || 0, price: 10 },
+  speciality64: { count: Number(localStorage.getItem("speciality64Count")) || 0, price: 15 }
 };
 
-let lastUpdated = localStorage.getItem("lastUpdated") || "Not yet";
+let history = JSON.parse(localStorage.getItem("lemonadeSalesHistory")) || [];
 
-const baconCountEl = document.getElementById("baconCount");
-const quackCountEl = document.getElementById("quackCount");
-const friesCountEl = document.getElementById("friesCount");
-
-const baconTotalEl = document.getElementById("baconTotal");
-const quackTotalEl = document.getElementById("quackTotal");
-const friesTotalEl = document.getElementById("friesTotal");
-
-const grandTotalEl = document.getElementById("grandTotal");
-const totalItemsEl = document.getElementById("totalItems");
-const lastUpdatedEl = document.getElementById("lastUpdated");
-
-const baconPriceInput = document.getElementById("baconPrice");
-const quackPriceInput = document.getElementById("quackPrice");
-const friesPriceInput = document.getElementById("friesPrice");
-
-baconPriceInput.value = data.bacon.price;
-quackPriceInput.value = data.quack.price;
-friesPriceInput.value = data.fries.price;
+const ids = ["classic", "flavor", "speciality", "redbull", "classic64", "speciality64"];
 
 function formatMoney(amount) {
-    return `$${amount.toFixed(2)}`;
+  return `$${amount.toFixed(2)}`;
 }
 
-function updateTime() {
-    lastUpdated = new Date().toLocaleString();
+function getTodayLabel() {
+  return new Date().toLocaleDateString();
 }
 
-function saveData() {
-    localStorage.setItem("baconCount", data.bacon.count);
-    localStorage.setItem("baconPrice", data.bacon.price);
+function saveCurrentData() {
+  ids.forEach((id) => {
+    localStorage.setItem(`${id}Count`, data[id].count);
+  });
+  localStorage.setItem("lemonadeSalesHistory", JSON.stringify(history));
+}
 
-    localStorage.setItem("quackCount", data.quack.count);
-    localStorage.setItem("quackPrice", data.quack.price);
+function getGrandTotal() {
+  return ids.reduce((sum, id) => sum + data[id].count * data[id].price, 0);
+}
 
-    localStorage.setItem("friesCount", data.fries.count);
-    localStorage.setItem("friesPrice", data.fries.price);
-
-    localStorage.setItem("lastUpdated", lastUpdated);
+function getTotalItems() {
+  return ids.reduce((sum, id) => sum + data[id].count, 0);
 }
 
 function updateScreen() {
-    baconCountEl.textContent = data.bacon.count;
-    quackCountEl.textContent = data.quack.count;
-    friesCountEl.textContent = data.fries.count;
+  ids.forEach((id) => {
+    document.getElementById(`${id}Count`).textContent = data[id].count;
+  });
 
-    baconTotalEl.textContent = formatMoney(data.bacon.count * data.bacon.price);
-    quackTotalEl.textContent = formatMoney(data.quack.count * data.quack.price);
-    friesTotalEl.textContent = formatMoney(data.fries.count * data.fries.price);
+  document.getElementById("grandTotal").textContent = formatMoney(getGrandTotal());
+  document.getElementById("totalItems").textContent = getTotalItems();
+  document.getElementById("todayDate").textContent = getTodayLabel();
+}
 
-    const grandTotal =
-        (data.bacon.count * data.bacon.price) +
-        (data.quack.count * data.quack.price) +
-        (data.fries.count * data.fries.price);
+function renderHistory() {
+  const historyListEl = document.getElementById("historyList");
 
-    const totalItems =
-        data.bacon.count +
-        data.quack.count +
-        data.fries.count;
+  if (history.length === 0) {
+    historyListEl.innerHTML = "<p>No saved days yet.</p>";
+    return;
+  }
 
-    grandTotalEl.textContent = formatMoney(grandTotal);
-    totalItemsEl.textContent = totalItems;
-    lastUpdatedEl.textContent = lastUpdated;
+  historyListEl.innerHTML = "";
+
+  const newestFirst = [...history].reverse();
+
+  newestFirst.forEach((day) => {
+    const entry = document.createElement("div");
+    entry.className = "history-entry";
+
+    entry.innerHTML = `
+      <h3>${day.date}</h3>
+      <p>Classic Lemonade: ${day.classicCount} (${formatMoney(day.classicSales)})</p>
+      <p>Flavor Lemonade: ${day.flavorCount} (${formatMoney(day.flavorSales)})</p>
+      <p>Speciality Lemonade: ${day.specialityCount} (${formatMoney(day.specialitySales)})</p>
+      <p>Red Bull Lemonade: ${day.redbullCount} (${formatMoney(day.redbullSales)})</p>
+      <p>64oz Classic: ${day.classic64Count} (${formatMoney(day.classic64Sales)})</p>
+      <p>64oz Speciality: ${day.speciality64Count} (${formatMoney(day.speciality64Sales)})</p>
+      <p><strong>Total Drinks:</strong> ${day.totalItems}</p>
+      <p><strong>Total Sales:</strong> ${formatMoney(day.grandTotal)}</p>
+    `;
+
+    historyListEl.appendChild(entry);
+  });
 }
 
 function changeCount(item, amount) {
-    data[item].count += amount;
+  data[item].count += amount;
 
-    if (data[item].count < 0) {
-        data[item].count = 0;
-    }
+  if (data[item].count < 0) {
+    data[item].count = 0;
+  }
 
-    updateTime();
-    saveData();
-    updateScreen();
+  playTapSound();
+  saveCurrentData();
+  updateScreen();
 }
 
 function resetDay() {
-    const confirmReset = confirm("Are you sure you want to reset the whole day?");
-    if (!confirmReset) return;
+  const confirmReset = confirm("Are you sure you want to reset today's counts without saving?");
+  if (!confirmReset) return;
 
-    data.bacon.count = 0;
-    data.quack.count = 0;
-    data.fries.count = 0;
+  ids.forEach((id) => {
+    data[id].count = 0;
+  });
 
-    updateTime();
-    saveData();
-    updateScreen();
+  saveCurrentData();
+  updateScreen();
 }
 
-baconPriceInput.addEventListener("input", () => {
-    data.bacon.price = Number(baconPriceInput.value) || 0;
-    updateTime();
-    saveData();
-    updateScreen();
-});
+function saveDay() {
+  const totalItems = getTotalItems();
 
-quackPriceInput.addEventListener("input", () => {
-    data.quack.price = Number(quackPriceInput.value) || 0;
-    updateTime();
-    saveData();
-    updateScreen();
-});
+  if (totalItems === 0) {
+    alert("You have nothing to save yet for today.");
+    return;
+  }
 
-friesPriceInput.addEventListener("input", () => {
-    data.fries.price = Number(friesPriceInput.value) || 0;
-    updateTime();
-    saveData();
-    updateScreen();
-});
+  const today = getTodayLabel();
+
+  const alreadySaved = history.find((entry) => entry.date === today);
+  if (alreadySaved) {
+    const overwrite = confirm("Today's numbers were already saved. Do you want to replace them?");
+    if (!overwrite) return;
+
+    history = history.filter((entry) => entry.date !== today);
+  }
+
+  const daySummary = {
+    date: today,
+    classicCount: data.classic.count,
+    classicSales: data.classic.count * data.classic.price,
+    flavorCount: data.flavor.count,
+    flavorSales: data.flavor.count * data.flavor.price,
+    specialityCount: data.speciality.count,
+    specialitySales: data.speciality.count * data.speciality.price,
+    redbullCount: data.redbull.count,
+    redbullSales: data.redbull.count * data.redbull.price,
+    classic64Count: data.classic64.count,
+    classic64Sales: data.classic64.count * data.classic64.price,
+    speciality64Count: data.speciality64.count,
+    speciality64Sales: data.speciality64.count * data.speciality64.price,
+    totalItems: totalItems,
+    grandTotal: getGrandTotal()
+  };
+
+  history.push(daySummary);
+
+  ids.forEach((id) => {
+    data[id].count = 0;
+  });
+
+  saveCurrentData();
+  updateScreen();
+  renderHistory();
+
+  alert("Day saved and reset for tomorrow.");
+}
 
 updateScreen();
+renderHistory();
