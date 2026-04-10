@@ -8,8 +8,6 @@
   --pink-3: #ff8fb3;
   --pink-4: #d94f8a;
   --pink-5: #8a2d53;
-  --dark: #2e2e2e;
-  --white: #ffffff;
   --card-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 }
 
@@ -58,7 +56,7 @@ body {
   border-radius: 18px;
   padding: 18px;
   text-align: center;
-  color: var(--white);
+  color: white;
   cursor: pointer;
   box-shadow: var(--card-shadow);
   background: #444;
@@ -93,7 +91,7 @@ body {
 
 .tile h2 {
   margin: 0;
-  font-size: 1.12rem;
+  font-size: 1.08rem;
 }
 
 .tile p {
@@ -407,7 +405,7 @@ body {
   }
 
   .tile h2 {
-    font-size: 1rem;
+    font-size: 0.98rem;
   }
 
   .count {
