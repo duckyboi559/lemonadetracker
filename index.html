@@ -3,77 +3,142 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lemonade Tracker</title>
+  <title>Lemonade POS</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app">
-    <h1>Lemonade Tracker</h1>
-    <p class="subtitle">Tap Counter</p>
+    <header class="hero">
+      <h1>Lemonade POS</h1>
+      <p class="subtitle">Tap drinks and add-ons, then choose payment</p>
+    </header>
 
-    <div class="grid">
-      <div class="tile lemonade" onclick="changeCount('classic', 1)">
+    <section class="grid">
+      <button class="tile lemonade-tile" onclick="addItem('classic', this)">
         <h2>Classic Lemonade</h2>
         <p>$6</p>
-        <div class="count" id="classicCount">0</div>
-      </div>
+        <div class="count" id="classicSold">0</div>
+        <div class="sold-label">Today Sold</div>
+      </button>
 
-      <div class="tile lemonade" onclick="changeCount('flavor', 1)">
-        <h2>Flavor Lemonade</h2>
-        <p>$7</p>
-        <div class="count" id="flavorCount">0</div>
-      </div>
-
-      <div class="tile lemonade" onclick="changeCount('speciality', 1)">
+      <button class="tile lemonade-tile" onclick="addItem('speciality', this)">
         <h2>Speciality Lemonade</h2>
         <p>$8</p>
-        <div class="count" id="specialityCount">0</div>
+        <div class="count" id="specialitySold">0</div>
+        <div class="sold-label">Today Sold</div>
+      </button>
+    </section>
+
+    <section class="addons-section card">
+      <h2>Add-ons</h2>
+      <div class="addon-grid">
+        <button class="addon-tile" onclick="addItem('flavorAdd', this)">
+          <div class="addon-title">Flavor</div>
+          <div class="addon-price">+$1</div>
+          <div class="addon-count" id="flavorAddSold">0</div>
+          <div class="sold-label dark-label">Today Sold</div>
+        </button>
+
+        <button class="addon-tile" onclick="addItem('creamyAdd', this)">
+          <div class="addon-title">Creamy</div>
+          <div class="addon-price">+$1</div>
+          <div class="addon-count" id="creamyAddSold">0</div>
+          <div class="sold-label dark-label">Today Sold</div>
+        </button>
+
+        <button class="addon-tile" onclick="addItem('bobaAdd', this)">
+          <div class="addon-title">Boba</div>
+          <div class="addon-price">+$1</div>
+          <div class="addon-count" id="bobaAddSold">0</div>
+          <div class="sold-label dark-label">Today Sold</div>
+        </button>
+      </div>
+    </section>
+
+    <section class="card current-order-card">
+      <div class="card-header-row">
+        <h2>Current Order</h2>
+        <button class="small-btn dark-btn" onclick="undoLastTap()">Undo Last Tap</button>
       </div>
 
-      <div class="tile lemonade" onclick="changeCount('redbull', 1)">
-        <h2>Red Bull Lemonade</h2>
-        <p>$9</p>
-        <div class="count" id="redbullCount">0</div>
+      <div id="orderList" class="order-list"></div>
+
+      <div class="order-totals">
+        <div class="order-total-line">
+          <span>Items in Order</span>
+          <strong id="orderItems">0</strong>
+        </div>
+        <div class="order-total-line big-line">
+          <span>Subtotal</span>
+          <strong id="orderSubtotal">$0.00</strong>
+        </div>
       </div>
 
-      <div class="tile lemonade" onclick="changeCount('classic64', 1)">
-        <h2>64oz Classic</h2>
-        <p>$10</p>
-        <div class="count" id="classic64Count">0</div>
+      <div class="checkout-row">
+        <button class="pay-btn cash-btn" onclick="checkoutOrder('cash')">Pay Cash</button>
+        <button class="pay-btn digital-btn" onclick="checkoutOrder('digital')">Pay Digital</button>
       </div>
 
-      <div class="tile lemonade" onclick="changeCount('speciality64', 1)">
-        <h2>64oz Speciality</h2>
-        <p>$15</p>
-        <div class="count" id="speciality64Count">0</div>
+      <div class="checkout-row">
+        <button class="pay-btn split-btn" onclick="splitPaymentHalf()">Split 50/50</button>
+        <button class="pay-btn split-custom-btn" onclick="splitPaymentCustom()">Split Custom</button>
       </div>
-    </div>
 
-    <div class="summary-card">
-      <h2>Grand Total</h2>
-      <div class="grand-total" id="grandTotal">$0.00</div>
-    </div>
+      <div class="checkout-row">
+        <button class="pay-btn cancel-btn" onclick="clearCurrentOrder()">Clear Order</button>
+      </div>
+    </section>
 
-    <div class="summary-card">
-      <h2>Total Drinks Sold</h2>
-      <div class="grand-total" id="totalItems">0</div>
-    </div>
+    <section class="summary-grid">
+      <div class="card summary-card">
+        <h2>Today Sales</h2>
+        <div class="big-number" id="todaySales">$0.00</div>
+      </div>
 
-    <div class="summary-card">
+      <div class="card summary-card">
+        <h2>Cash</h2>
+        <div class="big-number" id="cashTotal">$0.00</div>
+      </div>
+
+      <div class="card summary-card">
+        <h2>Digital</h2>
+        <div class="big-number" id="digitalTotal">$0.00</div>
+      </div>
+
+      <div class="card summary-card">
+        <h2>Today Items</h2>
+        <div class="big-number" id="todayItems">0</div>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <div class="card summary-card">
+        <h2>This Week</h2>
+        <div class="big-number" id="weeklySales">$0.00</div>
+      </div>
+
+      <div class="card summary-card">
+        <h2>Weekly Top Seller</h2>
+        <div class="top-seller" id="weeklyTopSeller">None yet</div>
+      </div>
+    </section>
+
+    <section class="card">
       <h2>Today's Date</h2>
       <p id="todayDate"></p>
-    </div>
+      <div class="save-row">
+        <button class="save-btn" onclick="saveDay()">Save Day</button>
+        <button class="reset-btn" onclick="resetDay()">Reset Day</button>
+      </div>
+    </section>
 
-    <div class="action-row">
-      <button class="save-btn" onclick="saveDay()">Save Day</button>
-      <button class="reset-btn" onclick="resetDay()">Reset Day</button>
-    </div>
-
-    <div class="summary-card">
+    <section class="card">
       <h2>Previous Days</h2>
       <div id="historyList" class="history-list"></div>
-    </div>
+    </section>
   </div>
+
+  <div id="confettiContainer" class="confetti-container"></div>
 
   <script src="script.js"></script>
 </body>
