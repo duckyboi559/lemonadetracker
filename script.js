@@ -1,13 +1,16 @@
 const ITEMS = {
   classic: { name: "Classic Lemonade", price: 6 },
   speciality: { name: "Speciality Lemonade", price: 8 },
+  redbull: { name: "Red Bull Lemonade", price: 9 },
+  classic64: { name: "64oz Classic", price: 10 },
+  speciality64: { name: "64oz Speciality", price: 15 },
   flavorAdd: { name: "Flavor Add-on", price: 1 },
   creamyAdd: { name: "Creamy Add-on", price: 1 },
   bobaAdd: { name: "Boba Add-on", price: 1 }
 };
 
 const ITEM_IDS = Object.keys(ITEMS);
-const STORAGE_KEY = "lemonadePosStateV1";
+const STORAGE_KEY = "lemonadePosStateV2";
 const tapSound = new Audio("sounds/tap.mp3");
 tapSound.preload = "auto";
 
